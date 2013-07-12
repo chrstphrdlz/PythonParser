@@ -1,12 +1,24 @@
 """
 Christopher Deleuze
-This program will parse through a raw email text file and search through the following lists to loof for the following fields,
+This program will parse through a raw email text file and search through the following lists to look for the following fields,
 extracting the information following it. The main function is at the bottom.
+It works by sharing a global file and reading in line by line into chechAndParseLine
+If the information is found at the beginning of the line, it will continue to read lines until
+a terminating condition is satisfied. It will then return the file to the previous condition so
+a different feild may be searched for.
 """
-recipientString = ["Delivered-To:","To:","To"]
-senderString = ["Received: from", "From:","From"]
-subjectString = ["Subject:","Subject"]
-dateString = ["Date:","Date"]
+
+#These feilds can be expanded to include more options
+recipientList = ["Delivered-To:","To:","To"]
+senderList = ["Received: from", "From:","From"]
+subjectList = ["Subject:","Subject"]
+dateList = ["Date:","Date"]
+
+AllFeilds = [recipientList,senderList,subjectList,dateList]
+
+
+
+
 
 #If the works appear, in order that they are found in the input list
 #will return either the next word, or line (depending on returnEntireLine)
@@ -52,21 +64,42 @@ def getInfo(keyWord,line, returnEntireLine):
     #Return the result
     return returnLine
 
-#Will have to continue if the line starts with a space
+
+
+
+
+
+
+
+#Will have to continue if the line starts with a space (the feild is not finished)
 def continuesInfo(line):
     return line!="" and (line[0]==" " or line[0] == "\t")
 
+
+
+
+
+
+
+
+
+"""
+Will check each input line for relevent information, returning an empty string if not
+initially found. If it is found, it will continue reading lines until a terminating condition
+is found. It will then return the file to the position directly after
+the information was extracted
+"""
 def checkAndParseLine(line,checkingWordList,readToEndOfLine,mappingString):
     global file
     global dictionary
-    #print(dictionary)
+    
     subject = getInfo(checkingWordList,line, readToEndOfLine)
 
     #If not "", found matching case
     
     if subject != "":
         
-        #store matching case
+        #Store matching case
         dictionary[mappingString] =  subject
           
         #Read in next line
@@ -92,41 +125,56 @@ def checkAndParseLine(line,checkingWordList,readToEndOfLine,mappingString):
                 #Saves the file position
                 previous_position = file.tell()
                 
-                #updates the line
+                #Updates the line
                 line = file.readline()
 
+
+        #Returns file to previous position (so it may be checked for feilds)
         file.seek(previous_position)
         
         return True
     
     
     return False
-            
+
+
+
+
+
+
+
+
+
+#The main parsing function       
 def parse_email():
 
+    #Shares the gloabl file and dictionary
     global file
     
     global dictionary
+
+    #Initialize the dictionary
     dictionary = {}
-    
+
+    #Initially reads a line
     line = file.readline()
 
     #Will read through each line in the file, and check for field information
     while line != "":
         
-        if checkAndParseLine(line,senderString,True,"Sender:"):
+        if checkAndParseLine(line,senderList,True,"Sender:"):
             line = file.readline()
             continue
 
-        if checkAndParseLine(line,subjectString,True,"Subject:") :
+        if checkAndParseLine(line,subjectList,True,"Subject:") :
             line = file.readline()
             continue
     
-        if checkAndParseLine(line,recipientString,True,"Recipient:"):
+        if checkAndParseLine(line,recipientList,True,"Recipient:"):
             line = file.readline()
             continue
         
-        if checkAndParseLine(line,dateString,True,"Date:"):
+        if checkAndParseLine(line,dateList,True,"Date:"):
             line = file.readline()
             continue
 
@@ -134,6 +182,9 @@ def parse_email():
         line = file.readline();    
         
     return
+
+
+
 
 
 
