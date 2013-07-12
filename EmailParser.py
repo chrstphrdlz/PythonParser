@@ -1,7 +1,7 @@
 """
 Christopher Deleuze
 This program will parse through a raw email text file and search through the following lists to loof for the following fields,
-extracting the information following it
+extracting the information following it. The main function is at the bottom.
 """
 recipientString = ["Delivered-To:","To:","To"]
 senderString = ["Received: from", "From:","From"]
@@ -135,6 +135,10 @@ def parse_email():
         
     return
 
+
+
+
+#This is the main running function
 #declare the file as global, get the path, and open the file
 global file
 
