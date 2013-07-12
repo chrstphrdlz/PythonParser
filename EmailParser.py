@@ -1,4 +1,8 @@
-
+"""
+Christopher Deleuze
+This program will parse through a raw email text file and search through the following lists to loof for the following fields,
+extracting the information following it
+"""
 recipientString = ["Delivered-To:","To:","To"]
 senderString = ["Received: from", "From:","From"]
 subjectString = ["Subject:","Subject"]
@@ -106,42 +110,44 @@ def parse_email():
     dictionary = {}
     
     line = file.readline()
-    
+
+    #Will read through each line in the file, and check for field information
     while line != "":
         
-        #print(line)
-        
-        if checkAndParseLine(line,senderString,True,"Sender"):
+        if checkAndParseLine(line,senderString,True,"Sender:"):
             line = file.readline()
             continue
 
-        if checkAndParseLine(line,subjectString,True,"Subject") :
+        if checkAndParseLine(line,subjectString,True,"Subject:") :
             line = file.readline()
             continue
     
-        if checkAndParseLine(line,recipientString,True,"Recipient"):
+        if checkAndParseLine(line,recipientString,True,"Recipient:"):
             line = file.readline()
             continue
         
-        if checkAndParseLine(line,dateString,True,"Date"):
+        if checkAndParseLine(line,dateString,True,"Date:"):
             line = file.readline()
             continue
+
+        #If none found, update line
         line = file.readline();    
         
     return
 
-
-filestring='C://Users//Chris//Downloads//Email.txt'
-
+#declare the file as global, get the path, and open the file
 global file
+
+filestring = input("Please give the path of the text file\n")
 
 file= open (filestring,"r")
 
-string = "this is a string"
-
+#declare the dictionary as global, and parse the email
 global dictionary
+
 parse_email()
 
+#print the result
 for entry in dictionary:
     print  (entry+" "+dictionary[entry])
 
