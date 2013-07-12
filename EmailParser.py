@@ -129,8 +129,8 @@ def checkAndParseLine(line,checkingWordList,readToEndOfLine,mappingString):
                 line = file.readline()
 
 
-        #Returns file to previous position (so it may be checked for feilds)
-        file.seek(previous_position)
+            #Returns file to previous position (so it may be checked for feilds)
+            file.seek(previous_position)
         
         return True
     
