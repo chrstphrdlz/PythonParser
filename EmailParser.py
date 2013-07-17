@@ -52,11 +52,12 @@ class fieldParser:
 def parseEmail(emailParser, text, index):
 
     #This is the list of fields to be searched for using the contained regular expressions
-    listOfRegularExpressions = ['Subject.*?:.*[^\S]','Date.*?:.*[\n.]','To:.*[\n.]','From:.*[\n.]']
+    listOfRegularExpressions = ['Subject\s*?:.*','Date\s*?:.*','To\s*?:.*','From\s*?:.*']
 
     for expression in listOfRegularExpressions:
-        result = re.findall(expression, text, re.M)[0]
-        emailParser.addEmailFeild(index, result)
+        result = re.findall(expression, text, re.M)
+        if len(result) > 0:
+            emailParser.addEmailFeild(index, result[0])
 
 
 def getTextFromFile(fileString):
