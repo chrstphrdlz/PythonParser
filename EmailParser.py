@@ -1,144 +1,126 @@
 """
 Christopher Deleuze
-This program will get the email text string and parse through it line by line.
-If it is continuing a subject, it will continue adding it, if not it will make a new entry for the subject
-It checks for fields by parsing through a list of strings accociated with those subjects, 
-adding the characters after the string to the feild (if it is a feild)
-The main running function is at the bottom
+
 """
-
+import re
+import sys
 #These feilds can be expanded to include more options
-recipientList = ["Delivered-To:","To:","To"]
-senderList = ["Received: from", "From:","From"]
-subjectList = ["Subject:","Subject"]
-dateList = ["Date:","Date"]
 
-AllFeilds = [dateList, senderList,subjectList,recipientList]
+emailStrings = []
 
-feildStrings = ["Date: ", "Sender: ", "Subject: ", "Recipient: "]
 
-#Gets the word list from the index of feildType
-def getWordList(feildType):
+class fieldParser:
+    
+    #Takes in email files to parse through
+    def __init__(self,emailStrings):
+        self.fieldDictionary = {}
+        self.email = emailStrings
 
-    return AllFeilds[feildType]
+    #Prints each associated email (dictionary key) and all the fields found
+    def __str__(self):
 
-#The enums for feilds
-class FieldEnum:
-    DATE = 0
-    SENDER = 1
-    SUBJECT = 2
-    RECIPIENT = 3
-    NOTHING = 4
+        returningString = "\n\n\n"
+
+        for email in self.fieldDictionary:
+
+            returningString += "Email adress: " + email + "\n" +"\n"
+
+            for field in self.fieldDictionary[email]:
+
+                returningString += field + "\n"
+
+            returningString += "\n"
+
+        return returningString
+
+    #Takes the index of the current email (for mapping) and the text to map it to
+    def addEmailFeild(self, emailIndex, message):
+
+        if self.email[emailIndex] in self.fieldDictionary:            
+            self.fieldDictionary[self.email[emailIndex]].append(message)
+
+        else:
+            self.fieldDictionary[self.email[emailIndex]] = [message]
+
+        
 
 
 #The main parsing function       
-def parse_email():
+def parseEmail(emailParser, text, index):
 
-    #Shares the gloabl file and dictionary
-    global file
-    
-    global dictionary
+    #This is the list of fields to be searched for using the contained regular expressions
+    listOfRegularExpressions = ['Subject.*?:.*[^\S]','Date.*?:.*[\n.]','To:.*[\n.]','From:.*[\n.]']
 
-    #Initialize the dictionary
-    dictionary = {}
-
-    #Reads the file into a giant string
-    fileString = file.read()
-
-    #Splits it up by newline characters
-    fileString = fileString.split("\n")
-    
-    #Initializes the feild type as nothing
-    feildType = FieldEnum.NOTHING
-
-    #Will read through each line in the file, and check for field information
-    for line in fileString:
-        
-        #If it continues, add the line to the dictionary feild
-        if continuesInfo(line):
-
-            continueFeild(feildType,line)     
-
-        #If not, get the feild and make a new entry for the dictionary
-        else:
-
-            feildType = getFeildType(line)
-
-            addToFeild(feildType,line)
-
-    return
+    for expression in listOfRegularExpressions:
+        result = re.findall(expression, text, re.M)[0]
+        emailParser.addEmailFeild(index, result)
 
 
-#Will have to continue if the line starts with a space (the feild is not finished)
-def continuesInfo(line):
-    return line!="" and (line[0]==" " or line[0] == "\t")
+def getTextFromFile(fileString):
+    try:
+        file = open(fileString,"r")
 
+    except  IOError:
+        print("did not open")
+        return ""
 
-#Will get the feild type of the line
-def getFeildType(line):
-    i = 0
+    addToString = file.read()
 
-    while i < len(AllFeilds):
+    return addToString
 
-        if isOfType(AllFeilds[i],line):
-
-            return i
-
-        i+=1
-
-    return 4
-
-
-def isOfType(keyWord,line):
-
-    #Checks for feilds among a list of strings
-    for i in keyWord :
-
-        #If the beginning is the same as one of the entries
-        if i == line[0:len(i)]:
-
-            return True
-
-    return False
-
-
-#Make the line (without the initial string) to the dictionary entry for it
-def addToFeild(feildType,line):
-
-    global dictionary
-
-    if feildType == FieldEnum.NOTHING:
-        return 
-
-    dictionary[feildStrings[feildType]] = line[len(feildStrings[feildType]):]
-
-
-    return
-
-#Add the line (without the initial string) to the dictionary entry for it
-def continueFeild(feildType,line):
-
-    global dictionary
-
-    if feildType == FieldEnum.NOTHING:
-        return 
-
-    dictionary[feildStrings[feildType]] += line[len(feildStrings[feildType]):]
-
-
-    return
 
 
 #This is the main running function
 
-#Get the path, and open the file
-filestring = input("Please give the path of the text file\n")
+#For improper usage and help
+if len(sys.argv) < 2:
+    print("\n\nusage: python EmailParser.py [-m] [email/text/document/path(s)]\n")
+    print("type python EmailParser.py -help for more information\n\n")
+    sys.exit()
 
-file = open (filestring,"r")
+if sys.argv[1] == "-help":
+    print("")
+
+#If -m is given, multiple arguments are given
+#adjust email strings to start from index 2
+if sys.argv[1] == "-m":
+
+    i=2
+
+    emailStrings = sys.argv[2:]
+
+#default
+else:
+    i=1
+
+    emailStrings = [sys.argv[1]]
+
+
+numArgs = len(sys.argv)
+
+emailText = []
+
+
+#Get file text and add to the list of emailText
+while i < numArgs:
+
+    string = getTextFromFile(sys.argv[i])    
+
+    emailText.append(string)
+
+    i+=1
+
+#Create an email parser
+emailParser = fieldParser(emailStrings)
 
 #Parse the email
-parse_email()
+i=0
+numArgs = len(emailText)
+while i < numArgs:
 
-#Print the result
-for entry in dictionary:
-    print  (entry+" "+dictionary[entry])    
+    parseEmail(emailParser, emailText[i], i)
+
+    i+=1
+
+#Print the parser
+print (emailParser)
