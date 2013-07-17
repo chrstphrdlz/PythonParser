@@ -20,6 +20,9 @@ class fieldParser:
     def __str__(self):
 
         returningString = "\n\n\n"
+        
+        if len(self.fieldDictionary) == 0:
+            returningString += "Did not find any fields."
 
         for email in self.fieldDictionary:
 
@@ -61,7 +64,7 @@ def getTextFromFile(fileString):
         file = open(fileString,"r")
 
     except  IOError:
-        print("did not open")
+        print("Could not open " + fileString + ". File does not exist")
         return ""
 
     addToString = file.read()
