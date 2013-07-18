@@ -27,11 +27,9 @@ class emailParser:
             returningString += "Did not find any fields."
 
         for email in self.fieldDictionary:
-
             returningString += "Email adress: " + email + "\n" +"\n"
 
             for field in self.fieldDictionary[email]:
-
                 returningString += field + "\n"
 
             returningString += "\n"
@@ -49,8 +47,10 @@ class emailParser:
 
     #Finds string matched by the emailParser's regexStrings and mapps it to the object's dictionary
     def parseEmail(self, text, emailName):
+
         for expression in self.regexStrings:
             result = re.findall(expression, text, re.DOTALL)
+
             if len(result) > 0:
                 self.addParsedInfo(emailName, result[0])
 
@@ -99,17 +99,15 @@ if "-c" in sys.argv:
 
 #Get file text and add to the list of emailText
 while i < numArgs:
-
     string = getTextFromFile(sys.argv[i])    
-
     emailText.append(string)
 
     i+=1
 
 #Create an email parser
 #For customized searching, look for -c
-if "-c" in sys.argv:
-    #get the text from the file, split it and use the regex commands to initialize the parser
+#Get the text from the file, split it and use the regex commands to initialize the parser
+if "-c" in sys.argv:    
     userArguments = getTextFromFile(sys.argv[len(sys.argv)-1])
 
     userArguments = userArguments.split(" ")
@@ -125,7 +123,6 @@ else:
 i=0
 numEmails = len(emailText)
 while i < numEmails:
-
     emailParser.parseEmail(emailText[i], emailFileNames[i])
 
     i+=1
