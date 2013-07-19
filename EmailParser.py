@@ -1,8 +1,9 @@
 """
 Christopher Deleuze
 Contains an email parsing class which is initialized with a list of regex strings to search with
-Can be used to parse multiple emails with it's parse function
-Results from search displayed by printing object
+Can be used to parse multiple emails with it's parse function, will return ParsedEmail object
+Can display results by printing ParsedEmail object or printing individual parsed fields in 
+ParsedEmail object
 
 """
 import re
@@ -11,30 +12,11 @@ import sys
 #Main class, stores a dictionary mapping the email textfile names, 
 #and the regular expression search strings
 #Prints the email file name, and the found strings
-class emailParser:
+class EmailParser:
     
     #Takes in a list or regex strings to search
-    def __init__(self,regexStrings):
-        self.fieldDictionary = {}
-        self.regexStrings = regexStrings
-
-    #Prints each associated email (dictionary key) and all the fields found
-    def __str__(self):
-
-        returningString = "\n\n\n"
-        
-        if len(self.fieldDictionary) == 0:
-            returningString += "Did not find any fields."
-
-        for email in self.fieldDictionary:
-            returningString += "Email adress: " + email + "\n" +"\n"
-
-            for field in self.fieldDictionary[email]:
-                returningString += field + "\n"
-
-            returningString += "\n"
-
-        return returningString
+    def __init__(self,regexFieldDictionary):
+        self.fieldDictionary = regexFieldDictionary
 
     #Takes the index of the current email (for mapping) and the text to map it to
     def addParsedInfo(self, emailName, message):
@@ -45,25 +27,96 @@ class emailParser:
         else:
             self.fieldDictionary[emailName] = [message]
 
-    #Finds string matched by the emailParser's regexStrings and mapps it to the object's dictionary
+    #Finds string matched by the EmailParser's regexStrings and mapps it to a seperate dictionary
+    #Returns a ParsedEmail object made from the dictionary
     def parseEmail(self, text, emailName):
+        parsedFieldDictionary = {}
 
-        for expression in self.regexStrings:
-            result = re.findall(expression, text, re.DOTALL)
+        for expression in self.fieldDictionary:
+            result = re.findall(self.fieldDictionary[expression], text, re.DOTALL)
 
             if len(result) > 0:
-                self.addParsedInfo(emailName, result[0])
+                #In the case of the content, the result is the boarder
+                #Split the border and omit the first element in the list (not in the content)
+                if(expression == 'Content'):
+                    result = text.split(str(result[0]))[1:]
+                    result = result[:len(result)-1]
+                else:
+                    result = result[0]
+
+                #Replace the regex string with the found info
+                parsedFieldDictionary[expression] = result
+
+        return ParsedEmail(parsedFieldDictionary)
 
 
+#Parsed email class, can print to display all parsed fields, or select a field to print
+class ParsedEmail:
+    #Has a dictionary mapping fields to the found strings
+    #The content is mapped to a list of the seperate multiple content sections
+    def __init__(self, dictionary):
+        self.parsedFieldDictionary = dictionary
+
+    def __str__(self):
+        returningString = ""
+
+        for field in self.parsedFieldDictionary:
+            returningString += field + ": "
+
+            #If field is content, print all sections seperatly, listing the content section number
+            if field == "Content":
+                contentList = self.parsedFieldDictionary[field]
+                sizeContentList = len(contentList)
+                i = 0
+
+                if sizeContentList > 1:
+                    returningString += "There are multiple content sections\n"
+
+                    while i < sizeContentList:
+                        returningString += "Content section " + str(i+1) + "\n" + contentList[i] + "\n"
+                        i+=1
+            else:
+                 returningString += self.parsedFieldDictionary[field] + "\n"
+
+        return returningString
+
+    #Returns a string representing the parsed field
+    def parsedField(self,field):
+
+        returningString = ""
+
+        if field in self.parsedFieldDictionary:
+            returningString += field + ": "
+
+            if field == "Content":
+                contentList = self.parsedFieldDictionary[field]
+                sizeContentList = len(contentList)
+                i = 0
+
+                if sizeContentList > 0:
+                    if sizeContentList > 1:
+                        returningString += "There are multiple content sections\n"
+
+                        while i < sizeContentList:
+                            returningString += "Content section " + str(i+1) + "\n" + contentList[i] + "\n"
+                            i+=1
+                    else:
+                        returningString += contentList[i] + "\n"
+
+                
+
+            else:
+                returningString += self.parsedFieldDictionary[field]
+
+        else:
+            returningString += "Field not found"
+
+        return returningString
 
 
-
-#Make a default field emailParser
-def parseDefaultFields():
-    return emailParser(['Subject\s*?:.*?\n','Date\s*?:.*?\n','To\s*?:.*?\n','From\s*?:.*?\n','--.*?Content.*?Type.*?:(.*?)--.*?Content.*?Type.*?:'])
-
-
-
+#Make a default field EmailParser
+def DefaultParser():
+    return EmailParser({'Subject': 'Subject\s*?:(.*?)\n','Date' : 'Date\s*?:(.*?)\n','From' : 'From\s*?:(.*?)\n','To' : 'To\s*?:(.*?)\n','Content' : '(--.*?)\nContent.*?Type.*?:.*?'})
 
 
 def getTextFromFile(fileString):
@@ -83,19 +136,16 @@ def getTextFromFile(fileString):
 
 #Main running function
 #If arguments improperly used
-if len(sys.argv) < 2 or "-e" not in sys.argv:
-    print("\n\nusage: python EmailParser.py -e email/text/document/path(s) [-c config/file/location]\n")
+if len(sys.argv) < 2 :
+    print("\n\nusage: python EmailParser.py [email/text/document/path(s)] \n")
     sys.exit()
 
 #Initialize 
-i=2
-emailFileNames = sys.argv[2:]
+i=1
+emailFileNames = sys.argv[1:]
 numArgs = len(sys.argv)
 emailText = []
 
-#Ignore the last two arguments if there is a -c
-if "-c" in sys.argv:
-    numArgs = numArgs - 2
 
 #Get file text and add to the list of emailText
 while i < numArgs:
@@ -105,27 +155,14 @@ while i < numArgs:
     i+=1
 
 #Create an email parser
-#For customized searching, look for -c
 #Get the text from the file, split it and use the regex commands to initialize the parser
-if "-c" in sys.argv:    
-    userArguments = getTextFromFile(sys.argv[len(sys.argv)-1])
-
-    userArguments = userArguments.split(" ")
-
-    emailParser = emailParser(userArguments)
-
-#Default (no -c)
-else:    
-    emailParser = parseDefaultFields()
+EmailParser = DefaultParser()
 
 
 #Parse the email
 i=0
-numEmails = len(emailText)
+numEmails = len(emailFileNames)
 while i < numEmails:
-    emailParser.parseEmail(emailText[i], emailFileNames[i])
-
+    parsedEmail = EmailParser.parseEmail(emailText[i], emailFileNames[i])
+    print(parsedEmail)     
     i+=1
-
-#Print the results of the parsing
-print (emailParser)
