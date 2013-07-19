@@ -1,9 +1,12 @@
 """
 Christopher Deleuze
-Contains an email parsing class which is initialized with a list of regex strings to search with
-Can be used to parse multiple emails with it's parse function, will return ParsedEmail object
-Can display results by printing ParsedEmail object or printing individual parsed fields in 
-ParsedEmail object
+Contains an email parsing class which is initialized with a dictionary of fields with 
+regex strings to search for the field with Can be used to parse multiple emails with it's parse 
+function, will return ParsedEmail object Can display results by printing ParsedEmail object or 
+printing individual parsed fields in the ParsedEmail object
+
+Side note: did not put default dictionary in constructor so later versions can allow for more 
+search customization (finding the scentences a word is in, allowing for user-supplied regex strings, ect)
 
 """
 import re
