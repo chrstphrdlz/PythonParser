@@ -6,7 +6,7 @@ function, will return ParsedEmail object Can display results by printing ParsedE
 printing individual parsed fields in the ParsedEmail object
 
 Side note: did not put default dictionary in constructor so later versions can allow for more 
-search customization (finding the scentences a word is in, allowing for user-supplied regex strings, ect)
+search customization (finding the sentences a word is in, allowing for user-supplied regex strings, etc)
 
 """
 import re
@@ -56,7 +56,7 @@ class EmailParser:
 #Parsed email class, can print to display all parsed fields, or select a field to print
 class ParsedEmail:
     #Has a dictionary mapping fields to the found strings
-    #The content is mapped to a list of the seperate multiple content sections
+    #The content is mapped to a list of the separate multiple content sections
     def __init__(self, dictionary):
         self.parsedFieldDictionary = dictionary
 
@@ -66,7 +66,7 @@ class ParsedEmail:
         for field in self.parsedFieldDictionary:
             returningString += field + ": "
 
-            #If field is content, print all sections seperatly, listing the content section number
+            #If field is content, print all sections separately, listing the content section number
             if field == "Content":
                 contentList = self.parsedFieldDictionary[field]
                 sizeContentList = len(contentList)
@@ -118,6 +118,8 @@ class ParsedEmail:
 
 
 #Make a default field EmailParser
+#All regex expressions map to inner field information, except content
+#Content finds the boarder text (will be used to aplit the email up by the borders)
 def DefaultParser():
     return EmailParser({'Subject': 'Subject\s*?:(.*?)\n','Date' : 'Date\s*?:(.*?)\n','From' : 'From\s*?:(.*?)\n','To' : 'To\s*?:(.*?)\n','Content' : '(--.*?)\nContent.*?Type.*?:.*?'})
 
