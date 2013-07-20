@@ -14,21 +14,11 @@ import sys
 
 #Main class, stores a dictionary mapping the email textfile names, 
 #and the regular expression search strings
-#Prints the email file name, and the found strings
 class EmailParser:
     
     #Takes in a list or regex strings to search
     def __init__(self,regexFieldDictionary):
         self.fieldDictionary = regexFieldDictionary
-
-    #Takes the index of the current email (for mapping) and the text to map it to
-    def addParsedInfo(self, emailName, message):
-
-        if emailName in self.fieldDictionary:            
-            self.fieldDictionary[emailName].append(message)
-
-        else:
-            self.fieldDictionary[emailName] = [message]
 
     #Finds string matched by the EmailParser's regexStrings and mapps it to a seperate dictionary
     #Returns a ParsedEmail object made from the dictionary
@@ -36,15 +26,15 @@ class EmailParser:
         parsedFieldDictionary = {}
 
         for expression in self.fieldDictionary:
+            #Get all matches and store it as a list in result
             result = re.findall(self.fieldDictionary[expression], text, re.DOTALL)
 
             if len(result) > 0:
-                #In the case of the content, the result is the boarder
-                #Split the border and omit the first element in the list (not in the content)
+                #If it is the content, store the entire list
+                #If not, just store the first match
                 if(expression != 'Content'):
                     result = result[0]
 
-                #Replace the regex string with the found info
                 parsedFieldDictionary[expression] = result
 
         return ParsedEmail(parsedFieldDictionary)
@@ -69,9 +59,9 @@ class ParsedEmail:
     def parsedField(self,field):
 
         returningString = ""
+        returningString += field + ": "
 
         if field in self.parsedFieldDictionary:
-            returningString += field + ": "
 
             if field == "Content":
                 contentList = self.parsedFieldDictionary[field]
@@ -79,6 +69,7 @@ class ParsedEmail:
                 i = 0
 
                 if sizeContentList > 0:
+
                     if sizeContentList > 1:
                         returningString += "There are multiple content sections\n"
 
@@ -87,12 +78,8 @@ class ParsedEmail:
                             i+=1
                     else:
                         returningString += contentList[i] + "\n"
-
-                
-
             else:
                 returningString += self.parsedFieldDictionary[field]
-
         else:
             returningString += "Field not found"
 
@@ -117,9 +104,7 @@ def getTextFromFile(fileString):
     addToString = file.read()
 
     return addToString
-
-
-
+    
 
 #Main running function
 #If arguments improperly used
@@ -133,24 +118,19 @@ emailFileNames = sys.argv[1:]
 numArgs = len(sys.argv)
 emailText = []
 
-
 #Get file text and add to the list of emailText
 while i < numArgs:
     string = getTextFromFile(sys.argv[i])    
     emailText.append(string)
-
     i+=1
 
 #Create an email parser
-#Get the text from the file, split it and use the regex commands to initialize the parser
 EmailParser = DefaultParser()
-
 
 #Parse the email
 i=0
 numEmails = len(emailFileNames)
 while i < numEmails:
-    parsedEmail = EmailParser.parseEmail(emailText[i], emailFileNames[i])
-     
+    parsedEmail = EmailParser.parseEmail(emailText[i], emailFileNames[i])     
     print(parsedEmail)
     i+=1
