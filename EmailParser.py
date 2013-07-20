@@ -19,7 +19,7 @@ class EmailParser:
         self.regexSearchDictionary = {'Subject': 'Subject\s*?:(.*?)\n\S',
         'Date' : 'Date\s*?:(.*?)\n\S','From' : 'From\s*?:(.*?)\n\S',
         'To' : 'To\s*?:(.*?)\n\S',
-        'Content' : '--.*?\n(Content.*?Type.*?:.*?)(?=--)',
+        'Content' : '--.*?\n(Content.*?Type.*?:.*?)(--.*--)',
         'Cc': 'Cc\s*?:(.*?)\n\S','Bcc': 'Bcc\s*?:(.*?)\n\S'}
 
     #Finds string matched by the EmailParser's regexStrings 
@@ -37,6 +37,8 @@ class EmailParser:
                 #If not, just store the first match
                 if(expression != 'Content'):
                     result = result[0]
+                else:
+                    result = list(result[0])
 
                 ParsedFieldDictionary[expression] = result
 
@@ -81,7 +83,7 @@ class ParsedEmail:
                     returningString += "There are multiple content sections\n"
                     for contentSection in contentList:
                         returningString += "\nContent section " + str(contentList.index(contentSection)+1) + \
-                        "\n" + contentList[i] + "\n\n"
+                        "\n" + contentSection + "\n\n"
                 else:
                     returningString += contentList[0] + "\n"
 
