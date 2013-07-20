@@ -2,11 +2,9 @@
 Christopher Deleuze
 Contains an email parsing class which is initialized with a dictionary of fields mapped to 
 corresponding regex strings. Can be used to parse multiple emails with its parse 
-function, will return ParsedEmail object Can display results by printing ParsedEmail object or 
+function, will return ParsedEmail object. Can display results by printing ParsedEmail object or 
 printing individual parsed fields in the ParsedEmail object
 
-Side note: did not put default dictionary in constructor so later versions can allow for more 
-search customization (finding the sentences a word is in, allowing for user-supplied regex strings, etc)
 
 """
 import re
@@ -17,13 +15,14 @@ import sys
 class EmailParser:
     
     #Takes in a list or regex strings to search
-    def __init__(self,regexFieldDictionary):
-        self.fieldDictionary = regexFieldDictionary
+    def __init__(self):
+        #All regex expressions map to inner field information
+        self.fieldDictionary = {'Subject': 'Subject\s*?:(.*?)\n\S','Date' : 'Date\s*?:(.*?)\n\S','From' : 'From\s*?:(.*?)\n\S','To' : 'To\s*?:(.*?)\n\S','Content' : '--.*?\n(Content.*?Type.*?:.*?)(?=--)','Cc': 'Cc\s*?:(.*?)\n\S','Bcc': 'Bcc\s*?:(.*?)\n\S'}
 
     #Finds string matched by the EmailParser's regexStrings and mapps it to a seperate dictionary
     #Returns a ParsedEmail object made from the dictionary
     def parseEmail(self, text, emailName):
-        parsedFieldDictionary = {}
+        getParsedFieldDictionary = {}
 
         for expression in self.fieldDictionary:
             #Get all matches and store it as a list in result
@@ -35,9 +34,9 @@ class EmailParser:
                 if(expression != 'Content'):
                     result = result[0]
 
-                parsedFieldDictionary[expression] = result
+                getParsedFieldDictionary[expression] = result
 
-        return ParsedEmail(parsedFieldDictionary)
+        return ParsedEmail(getParsedFieldDictionary)
 
 
 #Parsed email class, can print to display all parsed fields, or select a field to print
@@ -45,26 +44,29 @@ class ParsedEmail:
     #Has a dictionary mapping fields to the found strings
     #The content is mapped to a list of the separate multiple content sections
     def __init__(self, dictionary):
-        self.parsedFieldDictionary = dictionary
+        self.getParsedFieldDictionary = dictionary
 
     def __str__(self):
         returningString = ""
 
-        for field in self.parsedFieldDictionary:
-            returningString += self.parsedField(field) + "\n"
-
+        for field in self.getParsedFieldDictionary:
+            #Print Content last
+            if field != "Content":
+                returningString += self.getParsedField(field) + "\n"
+        if "Content" in self.getParsedFieldDictionary:
+            returningString += self.getParsedField("Content") + "\n"
         return returningString
 
     #Returns a string representing the parsed field
-    def parsedField(self,field):
+    def getParsedField(self,field):
 
         returningString = ""
         returningString += field + ": "
 
-        if field in self.parsedFieldDictionary:
+        if field in self.getParsedFieldDictionary:
 
             if field == "Content":
-                contentList = self.parsedFieldDictionary[field]
+                contentList = self.getParsedFieldDictionary[field]
                 sizeContentList = len(contentList)
                 i = 0
 
@@ -79,18 +81,11 @@ class ParsedEmail:
                     else:
                         returningString += contentList[i] + "\n"
             else:
-                returningString += self.parsedFieldDictionary[field]
+                returningString += self.getParsedFieldDictionary[field]
         else:
             returningString += "Field not found"
 
         return returningString
-
-
-#Make a default field EmailParser
-#All regex expressions map to inner field information, except content
-#Content finds the boarder text (will be used to aplit the email up by the borders)
-def DefaultParser():
-    return EmailParser({'Subject': 'Subject\s*?:(.*?)\n\S','Date' : 'Date\s*?:(.*?)\n\S','From' : 'From\s*?:(.*?)\n\S','To' : 'To\s*?:(.*?)\n\S','Content' : '--.*?\n(Content.*?Type.*?:.*?)(?=--)'})
 
 
 def getTextFromFile(fileString):
@@ -125,12 +120,12 @@ while i < numArgs:
     i+=1
 
 #Create an email parser
-EmailParser = DefaultParser()
+emailParser = EmailParser()
 
 #Parse the email
 i=0
 numEmails = len(emailFileNames)
 while i < numEmails:
-    parsedEmail = EmailParser.parseEmail(emailText[i], emailFileNames[i])     
+    parsedEmail = emailParser.parseEmail(emailText[i], emailFileNames[i])     
     print(parsedEmail)
     i+=1
