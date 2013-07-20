@@ -16,7 +16,11 @@ class EmailParser:
 
     def __init__(self):
         #Fields map to corresponding regex search strings
-        self.regexSearchDictionary = {'Subject': 'Subject\s*?:(.*?)\n\S','Date' : 'Date\s*?:(.*?)\n\S','From' : 'From\s*?:(.*?)\n\S','To' : 'To\s*?:(.*?)\n\S','Content' : '--.*?\n(Content.*?Type.*?:.*?)(?=--)','Cc': 'Cc\s*?:(.*?)\n\S','Bcc': 'Bcc\s*?:(.*?)\n\S'}
+        self.regexSearchDictionary = {'Subject': 'Subject\s*?:(.*?)\n\S',
+        'Date' : 'Date\s*?:(.*?)\n\S','From' : 'From\s*?:(.*?)\n\S',
+        'To' : 'To\s*?:(.*?)\n\S',
+        'Content' : '--.*?\n(Content.*?Type.*?:.*?)(?=--)',
+        'Cc': 'Cc\s*?:(.*?)\n\S','Bcc': 'Bcc\s*?:(.*?)\n\S'}
 
     #Finds string matched by the EmailParser's regexStrings 
     #and stores the results in a seperate dictionary
@@ -58,7 +62,7 @@ class ParsedEmail:
 
         if "Content" in self.ParsedFieldDictionary:
             returningString += self.getParsedField("Content") + "\n"
-            
+
         return returningString
 
     #Returns a string representing the parsed field
