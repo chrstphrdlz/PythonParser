@@ -55,8 +55,10 @@ class ParsedEmail:
             #Print Content last
             if field != "Content":
                 returningString += self.getParsedField(field) + "\n"
+
         if "Content" in self.ParsedFieldDictionary:
             returningString += self.getParsedField("Content") + "\n"
+            
         return returningString
 
     #Returns a string representing the parsed field
@@ -68,20 +70,16 @@ class ParsedEmail:
         if field in self.ParsedFieldDictionary:
 
             if field == "Content":
+
+
                 contentList = self.ParsedFieldDictionary[field]
-                sizeContentList = len(contentList)
-                i = 0
+                if len(contentList) > 1:
+                    returningString += "There are multiple content sections\n"
+                    for contentSection in contentList:
+                        returningString += "\nContent section " + str(contentList.index(contentSection)+1) + "\n" + contentList[i] + "\n\n"
+                else:
+                    returningString += contentList[0] + "\n"
 
-                if sizeContentList > 0:
-
-                    if sizeContentList > 1:
-                        returningString += "There are multiple content sections\n"
-
-                        while i < sizeContentList:
-                            returningString += "Content section " + str(i+1) + "\n" + contentList[i] + "\n"
-                            i+=1
-                    else:
-                        returningString += contentList[i] + "\n"
             else:
                 returningString += self.ParsedFieldDictionary[field]
         else:
@@ -98,9 +96,9 @@ def getTextFromFile(fileString):
         print("Could not open " + fileString + ". File does not exist")
         return ""
 
-    addToString = file.read()
+    fileText = file.read()
 
-    return addToString
+    return fileText
     
 
 #Main running function
