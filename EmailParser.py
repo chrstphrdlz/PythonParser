@@ -80,7 +80,8 @@ class ParsedEmail:
                 if len(contentList) > 1:
                     returningString += "There are multiple content sections\n"
                     for contentSection in contentList:
-                        returningString += "\nContent section " + str(contentList.index(contentSection)+1) + "\n" + contentList[i] + "\n\n"
+                        returningString += "\nContent section " + str(contentList.index(contentSection)+1) + \
+                        "\n" + contentList[i] + "\n\n"
                 else:
                     returningString += contentList[0] + "\n"
 
