@@ -41,10 +41,7 @@ class EmailParser:
             if len(result) > 0:
                 #In the case of the content, the result is the boarder
                 #Split the border and omit the first element in the list (not in the content)
-                if(expression == 'Content'):
-                    result = text.split(str(result[0]))[1:]
-                    result = result[:len(result)-1]
-                else:
+                if(expression != 'Content'):
                     result = result[0]
 
                 #Replace the regex string with the found info
@@ -64,22 +61,7 @@ class ParsedEmail:
         returningString = ""
 
         for field in self.parsedFieldDictionary:
-            returningString += field + ": "
-
-            #If field is content, print all sections separately, listing the content section number
-            if field == "Content":
-                contentList = self.parsedFieldDictionary[field]
-                sizeContentList = len(contentList)
-                i = 0
-
-                if sizeContentList > 1:
-                    returningString += "There are multiple content sections\n"
-
-                    while i < sizeContentList:
-                        returningString += "Content section " + str(i+1) + "\n" + contentList[i] + "\n"
-                        i+=1
-            else:
-                 returningString += self.parsedFieldDictionary[field] + "\n"
+            returningString += self.parsedField(field) + "\n"
 
         return returningString
 
@@ -121,7 +103,7 @@ class ParsedEmail:
 #All regex expressions map to inner field information, except content
 #Content finds the boarder text (will be used to aplit the email up by the borders)
 def DefaultParser():
-    return EmailParser({'Subject': 'Subject\s*?:(.*?)\n','Date' : 'Date\s*?:(.*?)\n','From' : 'From\s*?:(.*?)\n','To' : 'To\s*?:(.*?)\n','Content' : '(--.*?)\nContent.*?Type.*?:.*?'})
+    return EmailParser({'Subject': 'Subject\s*?:(.*?)\n\S','Date' : 'Date\s*?:(.*?)\n\S','From' : 'From\s*?:(.*?)\n\S','To' : 'To\s*?:(.*?)\n\S','Content' : '--.*?\n(Content.*?Type.*?:.*?)(?=--)'})
 
 
 def getTextFromFile(fileString):
@@ -169,5 +151,6 @@ i=0
 numEmails = len(emailFileNames)
 while i < numEmails:
     parsedEmail = EmailParser.parseEmail(emailText[i], emailFileNames[i])
-    print(parsedEmail)     
+     
+    print(parsedEmail)
     i+=1
