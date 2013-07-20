@@ -1,7 +1,7 @@
 """
 Christopher Deleuze
-Contains an email parsing class which is initialized with a dictionary of fields with 
-regex strings to search for the field with Can be used to parse multiple emails with it's parse 
+Contains an email parsing class which is initialized with a dictionary of fields mapped to 
+corresponding regex strings. Can be used to parse multiple emails with its parse 
 function, will return ParsedEmail object Can display results by printing ParsedEmail object or 
 printing individual parsed fields in the ParsedEmail object
 
