@@ -19,7 +19,7 @@ class EmailParser:
         self.regexSearchDictionary = {'Subject': 'Subject\s*?:(.*?)\n\S',
         'Date' : 'Date\s*?:(.*?)\n\S','From' : 'From\s*?:(.*?)\n\S',
         'To' : 'To\s*?:(.*?)\n\S',
-        'Content' : '--.*?\n(Content.*?Type.*?:.*?)(--.*--)',
+        'Content' : '--.*?\n(Content.*?Type.*?:.*?)\n(?=--.*?\n)',
         'Cc': 'Cc\s*?:(.*?)\n\S','Bcc': 'Bcc\s*?:(.*?)\n\S'}
 
     #Finds string matched by the EmailParser's regexStrings 
@@ -37,9 +37,7 @@ class EmailParser:
                 #If not, just store the first match
                 if(expression != 'Content'):
                     result = result[0]
-                else:
-                    result = list(result[0])
-
+                
                 ParsedFieldDictionary[expression] = result
 
         return ParsedEmail(ParsedFieldDictionary,emailName)
